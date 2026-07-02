@@ -1,0 +1,85 @@
+name: pet_health_assistant
+description: AI Pet Health Assistant Platform
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.2.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^14.2.0
+
+  # Network
+  dio: ^5.4.3+1
+  retrofit: ^4.1.0
+  json_annotation: ^4.9.0
+  freezed_annotation: ^2.4.4
+
+  # Storage
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.2.3
+
+  # Auth
+  google_sign_in: 6.3.0
+  sign_in_with_apple: ^6.1.0
+
+  # UI
+  cupertino_icons: ^1.0.8
+  shimmer: ^3.0.0
+  cached_network_image: ^3.3.1
+  fl_chart: ^0.68.0
+  flutter_svg: ^2.0.10+1
+  image_picker: ^1.0.7
+  record: ^6.0.0
+
+  # Maps
+  google_maps_flutter: ^2.7.0
+  geolocator: ^12.0.0
+
+  # Notifications
+  firebase_core: ^2.27.0
+  firebase_messaging: ^14.7.19
+  flutter_local_notifications: ^17.2.1+2
+
+  # Payments (add back when implementing: purchases_flutter: ^6.30.2)
+
+  # Utilities
+  intl: ^0.20.2
+  logger: ^2.3.0
+  equatable: ^2.0.5
+  dartz: ^0.10.1
+  connectivity_plus: ^6.0.3
+  url_launcher: ^6.2.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  mockito: ^5.4.4
+  build_runner: ^2.4.9
+  freezed: ^2.5.2
+  json_serializable: ^6.8.0
+  retrofit_generator: ^9.1.0
+  riverpod_generator: ^2.4.0
+  flutter_lints: ^4.0.0
+
+dependency_overrides:
+  record_platform_interface: '>=1.0.0 <1.5.0'
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/locales/

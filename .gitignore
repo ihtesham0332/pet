@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+__pycache__/
+*.pyc
+.venv/
+
+# Build
+dist/
+build/
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
+*.dSYM/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Env
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flutter
+.pub-cache/
+.packages
+.pub/
+build/
+*.iml
+flutter_*.png
+.coverage/
+coverage/
+
+# Logs
+*.log
+logs/
+
+# Docker
+docker-data/

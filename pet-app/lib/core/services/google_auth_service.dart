@@ -1,0 +1,34 @@
+import 'package:google_sign_in/google_sign_in.dart';
+import '../network/api_client.dart';
+import '../constants/api_endpoints.dart';
+
+class GoogleAuthService {
+  late final GoogleSignIn _googleSignIn;
+  final ApiClient _apiClient;
+
+  GoogleAuthService(this._apiClient) {
+    _googleSignIn = GoogleSignIn(
+      serverClientId: '448281927244-aamt6nd56gqsvmp5jbe3f0tnvhrhr6ga.apps.googleusercontent.com',
+    );
+  }
+
+  Future<Map<String, dynamic>> signIn() async {
+    await _googleSignIn.signOut();
+    final account = await _googleSignIn.signIn();
+    if (account == null) throw Exception('Google sign-in cancelled');
+
+    final auth = await account.authentication;
+    if (auth.idToken == null) throw Exception('No ID token from Google');
+
+    final response = await _apiClient.post(
+      ApiEndpoints.googleAuth,
+      data: {'id_token': auth.idToken},
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<void> signOut() async {
+    await _googleSignIn.signOut();
+  }
+}
