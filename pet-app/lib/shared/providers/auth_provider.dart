@@ -76,6 +76,10 @@ class AuthProvider extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final data = await _authRepository.signInWithGoogle();
+      if (data == null) {
+        state = state.copyWith(isLoading: false);
+        return;
+      }
       final user = AuthRepository.userFromJson(data['user'] as Map<String, dynamic>);
       state = state.copyWith(isLoading: false, isAuthenticated: true, user: user);
     } catch (e) {

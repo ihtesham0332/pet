@@ -12,10 +12,10 @@ class GoogleAuthService {
     );
   }
 
-  Future<Map<String, dynamic>> signIn() async {
+  Future<Map<String, dynamic>?> signIn() async {
     await _googleSignIn.signOut();
     final account = await _googleSignIn.signIn();
-    if (account == null) throw Exception('Google sign-in cancelled');
+    if (account == null) return null;
 
     final auth = await account.authentication;
     if (auth.idToken == null) throw Exception('No ID token from Google');

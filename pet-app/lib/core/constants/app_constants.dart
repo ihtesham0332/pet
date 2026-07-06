@@ -1,13 +1,24 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
-
 class AppConstants {
   AppConstants._();
 
   static const String appName = 'Pet Health Assistant';
   static const String appVersion = '1.0.0';
 
-  // API — localhost for web, LAN IP for Android device testing
-  static String get host => 'localhost';
+  // ── Host Configuration ──────────────────────────────────────────
+  // Physical Android/iOS device: set to your computer's LAN IP
+  //   Find it: ipconfig (Windows) or ifconfig (Mac/Linux)
+  //   Example: '192.168.1.100'
+  //
+  // Android emulator: leave as '10.0.2.2'
+  // iOS simulator / Web: leave blank (uses 'localhost')
+  static const String hostOverride = '';
+
+  static String get host {
+    if (hostOverride.isNotEmpty) return hostOverride;
+    // Uses ADB reverse (physical USB) → localhost works
+    // For Android emulator: set hostOverride = '10.0.2.2'
+    return 'localhost';
+  }
   static String get cloudApiBaseUrl => 'http://$host:8001';
   static String get localAiBaseUrl => 'http://$host:8000';
   static const Duration apiTimeout = Duration(seconds: 30);

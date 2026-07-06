@@ -35,9 +35,10 @@ class AuthRepository {
     return data;
   }
 
-  Future<Map<String, dynamic>> signInWithGoogle() async {
+  Future<Map<String, dynamic>?> signInWithGoogle() async {
     final googleService = GoogleAuthService(_apiClient);
     final data = await googleService.signIn();
+    if (data == null) return null;
     final token = data['access_token'] as String;
     await _storage.write(key: 'jwt_token', value: token);
     return data;
