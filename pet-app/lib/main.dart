@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
 
-void main() {
+import 'shared/services/notification_service.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await notificationService.initialize();
   runApp(
     const ProviderScope(
       child: PetHealthApp(),

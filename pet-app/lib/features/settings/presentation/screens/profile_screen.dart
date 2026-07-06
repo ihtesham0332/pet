@@ -174,32 +174,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
-
-          Text('Subscription',
-              style: Theme.of(context)
-                  .textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: Icon(
-                Icons.card_membership,
-                color: user?.subscriptionTier == 'free' ? Colors.grey : AppTheme.primaryGreen,
-              ),
-              title: Text(
-                '${user?.subscriptionTier.toUpperCase() ?? 'FREE'} Plan',
-              ),
-              subtitle: Text(
-                user?.subscriptionTier == 'free'
-                    ? '1 pet, 3 symptom checks/month'
-                    : user?.subscriptionTier == 'premium'
-                        ? '5 pets, 30 symptom checks/month'
-                        : 'Unlimited pets & features',
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.go('/settings/subscription'),
-            ),
-          ),
         ],
       ),
     );

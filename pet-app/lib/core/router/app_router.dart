@@ -17,6 +17,7 @@ import 'package:pet_health_assistant/features/health_dashboard/presentation/scre
 import 'package:pet_health_assistant/features/settings/presentation/screens/settings_screen.dart';
 import 'package:pet_health_assistant/features/settings/presentation/screens/profile_screen.dart';
 import 'package:pet_health_assistant/features/settings/presentation/screens/subscription_screen.dart';
+import 'package:pet_health_assistant/features/settings/presentation/screens/legal_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -112,6 +113,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'subscription',
                 name: 'subscription',
                 builder: (_, __) => const SubscriptionScreen(),
+              ),
+              GoRoute(
+                path: 'terms',
+                name: 'terms',
+                builder: (_, __) => const LegalScreen(type: 'terms'),
+              ),
+              GoRoute(
+                path: 'privacy',
+                name: 'privacy',
+                builder: (_, __) => const LegalScreen(type: 'privacy'),
               ),
             ],
           ),
