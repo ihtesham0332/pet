@@ -5,7 +5,7 @@ from typing import Optional
 class Settings(BaseSettings):
     # AI Provider Keys
     openai_api_key: Optional[str] = None
-    longcat_api_key: str = "ak_2Eg7jM73V35l3IB6Yo6IJ30K8x41Z"
+    longcat_api_key: str = "ak_2In46X2Gp5hD8QO7vW5Vr5EU2ME2B"
 
     # Service
     ai_service_api_key: str = "dev-internal-key"

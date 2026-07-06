@@ -20,17 +20,15 @@ class ApiEndpoints {
   static String petVaccinations(String id) => '/pets/$id/vaccinations';
 
   // Symptoms
-  static const String symptomAnalyze = '/v1/symptoms/analyze';
-  static const String symptomAnalyzeImage = '/v1/symptoms/analyze-image';
+  static const String symptomAnalyze = '/symptoms/analyze';
   static const String symptomHistory = '/symptoms/history';
   static String symptomById(String id) => '/symptoms/$id';
 
   // Emergency
-  static const String emergencyCheck = '/v1/emergency/check';
-  static const String emergencyNearbyVets = '/v1/emergency/nearby-vets';
+  static const String emergencyCheck = '/emergency/check';
+  static const String emergencyNearbyVets = '/emergency/nearby-vets';
 
   // Recommendations
-  static const String recommendFood = '/v1/recommendations/food';
   static const String recommendProducts = '/recommendations/products';
 
   // Veterinary

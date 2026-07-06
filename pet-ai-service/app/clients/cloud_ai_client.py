@@ -14,8 +14,8 @@ class CloudAIClient:
 
         if provider == "longcat":
             self.api_key = settings.longcat_api_key
-            self.base_url = "https://api.longcat.chat/openai"
-            self.model = "LongCat-2.0-Preview"
+            self.base_url = "https://api.longcat.chat/openai/v1"
+            self.model = "LongCat-2.0"
         elif provider == "openai":
             self.api_key = settings.openai_api_key or ""
             self.base_url = "https://api.openai.com/v1"

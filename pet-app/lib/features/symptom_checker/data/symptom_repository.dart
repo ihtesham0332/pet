@@ -1,55 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 
 import '../../../core/constants/api_endpoints.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../shared/providers/ai_settings_provider.dart';
-import '../../../core/network/ai_client.dart';
+import '../../../core/network/api_client.dart';
 import '../domain/symptom_result_entity.dart';
 
 class SymptomRepository {
-  final AIClient _aiClient;
-  final Dio _apiClient;
+  final ApiClient _apiClient;
 
-  SymptomRepository(this._aiClient, this._apiClient);
+  SymptomRepository(this._apiClient);
 
   Future<SymptomResultEntity> analyzeSymptoms({
+    required String petId,
     required String text,
     String? petSpecies,
     int? petAge,
     String? petBreed,
     double? petWeightKg,
   }) async {
-    final response = await _aiClient.post(
+    final response = await _apiClient.post(
       ApiEndpoints.symptomAnalyze,
       data: {
+        'pet_id': petId,
         'text': text,
-        'pet_species': petSpecies,
-        'pet_age': petAge,
-        'pet_breed': petBreed,
-        'pet_weight_kg': petWeightKg,
+        if (petSpecies != null) 'pet_species': petSpecies,
+        if (petAge != null) 'pet_age': petAge,
+        if (petBreed != null) 'pet_breed': petBreed,
+        if (petWeightKg != null) 'pet_weight_kg': petWeightKg,
       },
-    );
-    return SymptomResultEntity.fromJson(response.data);
-  }
-
-  Future<SymptomResultEntity> analyzeImage({
-    required String imagePath,
-    String? description,
-  }) async {
-    final response = await _aiClient.uploadFile(
-      ApiEndpoints.symptomAnalyzeImage,
-      filePath: imagePath,
-      extraFields: description != null ? {'description': description} : null,
     );
     return SymptomResultEntity.fromJson(response.data);
   }
 }
 
 final symptomRepositoryProvider = Provider<SymptomRepository>((ref) {
-  final settings = ref.watch(aiSettingsProvider);
-  final aiClient = AIClient(useLocalAI: settings.useLocalAI);
-  // This would use the API client for saving history to backend
-  final apiClient = Dio(BaseOptions(baseUrl: AppConstants.cloudApiBaseUrl));
-  return SymptomRepository(aiClient, apiClient);
+  final apiClient = ref.watch(apiClientProvider);
+  return SymptomRepository(apiClient);
 });

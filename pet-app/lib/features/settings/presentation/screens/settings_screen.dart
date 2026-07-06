@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/providers/auth_provider.dart';
-import '../../../../shared/providers/ai_settings_provider.dart';
 import '../../../../shared/providers/theme_provider.dart';
 import '../../../../shared/providers/locale_provider.dart';
 import '../../../../shared/providers/notification_settings_provider.dart';
@@ -15,7 +14,6 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final aiSettings = ref.watch(aiSettingsProvider);
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeProvider);
 
@@ -24,40 +22,6 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('AI Provider',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  )),
-          const SizedBox(height: 8),
-          Card(
-            child: Column(
-              children: [
-                SwitchListTile(
-                  title: const Text('Use Local AI (Qwen)'),
-                  subtitle: Text(
-                    aiSettings.useLocalAI
-                        ? 'Running on-premise Qwen models'
-                        : 'Using cloud AI (Longcat/OpenAI)',
-                  ),
-                  value: aiSettings.useLocalAI,
-                  onChanged: (_) => ref.read(aiSettingsProvider.notifier).toggleLocal(),
-                  secondary: Icon(
-                    aiSettings.useLocalAI ? Icons.computer : Icons.cloud,
-                    color: aiSettings.useLocalAI ? AppTheme.primaryGreen : AppTheme.infoBlue,
-                  ),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.speed),
-                  title: const Text('Model: Qwen2.5 7B'),
-                  subtitle: const Text('CPU-optimized GGUF quantized'),
-                  trailing: Chip(
-                    label: const Text('Local', style: TextStyle(fontSize: 11)),
-                    backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
-                  ),
-                ),
-              ],
-            ),
-          ),
           const SizedBox(height: 24),
 
           // Account

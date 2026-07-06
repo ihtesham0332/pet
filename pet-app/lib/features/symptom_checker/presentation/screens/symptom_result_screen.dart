@@ -6,18 +6,9 @@ import '../../../../shared/widgets/risk_badge.dart';
 import '../../domain/symptom_result_entity.dart';
 
 class SymptomResultScreen extends StatelessWidget {
-  const SymptomResultScreen({super.key});
+  final SymptomResultEntity result;
 
-  // Mock result
-  static final SymptomResultEntity _mockResult = SymptomResultEntity(
-    riskLevel: 'medium',
-    possibleConditions: ['Kennel Cough', 'Bronchitis', 'Allergic Reaction'],
-    confidence: 0.78,
-    recommendation: 'Monitor your pet for 24 hours. If coughing persists or '
-        'worsens, consult a veterinarian. Ensure rest and adequate hydration.',
-    isEmergency: false,
-    aiProvider: 'local_qwen',
-  );
+  const SymptomResultScreen({super.key, required this.result});
 
   @override
   Widget build(BuildContext context) {
@@ -42,25 +33,25 @@ class SymptomResultScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    RiskBadge(riskLevel: _mockResult.riskLevel, size: 16),
+                    RiskBadge(riskLevel: result.riskLevel, size: 16),
                     const SizedBox(height: 8),
                     Text(
-                      'Risk Level: ${_mockResult.riskLevel.toUpperCase()}',
+                      'Risk Level: ${result.riskLevel.toUpperCase()}',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     const SizedBox(height: 16),
                     LinearProgressIndicator(
-                      value: _mockResult.confidence,
+                      value: result.confidence,
                       backgroundColor: Colors.grey[200],
-                      color: _getConfidenceColor(_mockResult.confidence),
+                      color: _getConfidenceColor(result.confidence),
                       minHeight: 8,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'AI Confidence: ${(_mockResult.confidence * 100).toStringAsFixed(0)}%',
+                      'AI Confidence: ${(result.confidence * 100).toStringAsFixed(0)}%',
                       style: TextStyle(color: AppTheme.textSecondary),
                     ),
                   ],
@@ -70,7 +61,7 @@ class SymptomResultScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Emergency Banner
-            if (_mockResult.isEmergency)
+            if (result.isEmergency)
               Card(
                 color: AppTheme.emergencyRed.withOpacity(0.1),
                 child: Padding(
@@ -92,7 +83,7 @@ class SymptomResultScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            ...?_mockResult.emergencyActions?.map(
+                            ...?result.emergencyActions?.map(
                               (a) => Text('• $a', style: const TextStyle(color: AppTheme.emergencyRed)),
                             ),
                           ],
@@ -109,7 +100,7 @@ class SymptomResultScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     )),
             const SizedBox(height: 8),
-            ..._mockResult.possibleConditions.map(
+            ...result.possibleConditions.map(
               (condition) => Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
@@ -130,7 +121,7 @@ class SymptomResultScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  _mockResult.recommendation,
+                  result.recommendation,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
               ),
@@ -140,7 +131,7 @@ class SymptomResultScreen extends StatelessWidget {
             // AI Provider
             Center(
               child: Text(
-                'Analyzed by: ${_mockResult.aiProvider}',
+                'Analyzed by: ${result.aiProvider}',
                 style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
               ),
             ),

@@ -20,13 +20,10 @@ class AppConstants {
     return 'localhost';
   }
   static String get cloudApiBaseUrl => 'http://$host:8001';
-  static String get localAiBaseUrl => 'http://$host:8000';
-  static const Duration apiTimeout = Duration(seconds: 30);
-  static const Duration aiTimeout = Duration(seconds: 120);
+  static const Duration apiTimeout = Duration(seconds: 120);
 
   // AI
-  static const String localAiServiceKey = 'dev-internal-key';
-  static const String longcatApiKey = 'ak_2Eg7jM73V35l3IB6Yo6IJ30K8x41Z';
+  static const String aiApiKey = 'ak_2In46X2Gp5hD8QO7vW5Vr5EU2ME2B';
 
   // Limits
   static const int freeSymptomChecksPerMonth = 3;

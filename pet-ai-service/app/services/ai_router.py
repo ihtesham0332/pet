@@ -66,6 +66,18 @@ class AIRouter:
 
         return [p for p in base if p in self._providers]
 
+    async def _skip_unhealthy(self, providers: list[AIProvider]) -> list[AIProvider]:
+        healthy = []
+        for key in providers:
+            provider = self._providers.get(key)
+            if isinstance(provider, OllamaClient):
+                ok = await provider.is_healthy()
+                if not ok:
+                    logger.info("Skipping unhealthy Ollama provider: {}", key)
+                    continue
+            healthy.append(key)
+        return healthy
+
     async def infer(
         self,
         messages: list,
@@ -76,6 +88,7 @@ class AIRouter:
         priority = self._priority_chain(task, prefer_local)
         if not priority:
             raise RuntimeError("No AI provider available")
+        priority = await self._skip_unhealthy(priority)
 
         last_error = None
         for provider_key in priority:

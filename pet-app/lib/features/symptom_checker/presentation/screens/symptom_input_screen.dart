@@ -1,11 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../data/symptom_repository.dart';
 
 class SymptomInputScreen extends ConsumerStatefulWidget {
   final String petId;
@@ -18,9 +16,6 @@ class SymptomInputScreen extends ConsumerStatefulWidget {
 
 class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
   final _textController = TextEditingController();
-  final _picker = ImagePicker();
-  XFile? _selectedImage;
-  bool _isRecording = false;
   bool _isAnalyzing = false;
 
   @override
@@ -29,32 +24,29 @@ class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) setState(() => _selectedImage = image);
-  }
-
-  Future<void> _takePhoto() async {
-    final image = await _picker.pickImage(source: ImageSource.camera);
-    if (image != null) setState(() => _selectedImage = image);
-  }
-
-  void _toggleRecording() {
-    setState(() => _isRecording = !_isRecording);
-    // Voice recording would be implemented with the 'record' package
-  }
-
   Future<void> _analyze() async {
-    if (_textController.text.trim().isEmpty && _selectedImage == null) return;
+    if (_textController.text.trim().isEmpty) return;
 
     setState(() => _isAnalyzing = true);
 
-    // Simulate AI analysis
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final repo = ref.read(symptomRepositoryProvider);
+      final result = await repo.analyzeSymptoms(
+        petId: widget.petId,
+        text: _textController.text.trim(),
+      );
 
-    if (mounted) {
-      context.push('/pets/${widget.petId}/symptom-result');
-      setState(() => _isAnalyzing = false);
+      if (mounted) {
+        context.push('/pets/${widget.petId}/symptom-result', extra: result);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Analysis failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAnalyzing = false);
     }
   }
 
@@ -91,68 +83,8 @@ class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-
-            // Voice & Image Controls
-            Row(
-              children: [
-                _InputButton(
-                  icon: _isRecording ? Icons.mic : Icons.mic_none,
-                  label: _isRecording ? 'Stop' : 'Voice',
-                  color: _isRecording ? AppTheme.emergencyRed : AppTheme.infoBlue,
-                  onTap: _toggleRecording,
-                ),
-                const SizedBox(width: 12),
-                _InputButton(
-                  icon: Icons.image,
-                  label: 'Gallery',
-                  color: AppTheme.primaryGreen,
-                  onTap: _pickImage,
-                ),
-                const SizedBox(width: 12),
-                _InputButton(
-                  icon: Icons.camera_alt,
-                  label: 'Camera',
-                  color: AppTheme.accentOrange,
-                  onTap: _takePhoto,
-                ),
-              ],
-            ),
-
-            // Image Preview
-            if (_selectedImage != null) ...[
-              const SizedBox(height: 16),
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      File(_selectedImage!.path),
-                      height: 200,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.black54,
-                      radius: 16,
-                      child: IconButton(
-                        iconSize: 18,
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => setState(() => _selectedImage = null),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-
             const SizedBox(height: 32),
 
-            // Analyze Button
             ElevatedButton.icon(
               onPressed: _isAnalyzing ? null : _analyze,
               icon: _isAnalyzing
@@ -189,44 +121,6 @@ class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
   }
 }
 
-class _InputButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _InputButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.3)),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(height: 4),
-              Text(label, style: TextStyle(color: color, fontSize: 12)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _AnalysisAnimation extends StatelessWidget {
   const _AnalysisAnimation();
 
@@ -246,7 +140,7 @@ class _AnalysisAnimation extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'AI analyzing with Qwen model...',
+          'AI analyzing symptoms...',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppTheme.textSecondary,
               ),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../pet/presentation/providers/pet_provider.dart';
 
-class EmergencyScreen extends StatelessWidget {
+class EmergencyScreen extends ConsumerWidget {
   const EmergencyScreen({super.key});
 
   static const List<Map<String, dynamic>> _emergencyContacts = [
@@ -25,7 +27,7 @@ class EmergencyScreen extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Emergency'),
@@ -80,8 +82,14 @@ class EmergencyScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        // Navigate to first pet's symptom checker
-                        context.go('/pets/1/symptom-checker');
+                        final state = ref.read(petProvider);
+                        if (state.pets.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Add a pet first to check symptoms')),
+                          );
+                          return;
+                        }
+                        context.go('/pets/${state.pets.first.id}/symptom-checker');
                       },
                       icon: const Icon(Icons.healing),
                       label: const Text('Analyze Symptoms'),

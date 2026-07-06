@@ -11,6 +11,7 @@ import 'package:pet_health_assistant/features/pet/presentation/screens/pet_detai
 import 'package:pet_health_assistant/features/pet/presentation/screens/add_pet_screen.dart';
 import 'package:pet_health_assistant/features/symptom_checker/presentation/screens/symptom_input_screen.dart';
 import 'package:pet_health_assistant/features/symptom_checker/presentation/screens/symptom_result_screen.dart';
+import 'package:pet_health_assistant/features/symptom_checker/domain/symptom_result_entity.dart';
 import 'package:pet_health_assistant/features/emergency/presentation/screens/emergency_screen.dart';
 import 'package:pet_health_assistant/features/health_dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:pet_health_assistant/features/settings/presentation/screens/settings_screen.dart';
@@ -79,7 +80,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'symptom-result',
                     name: 'symptomResult',
-                    builder: (_, state) => const SymptomResultScreen(),
+                    builder: (_, state) => SymptomResultScreen(
+                      result: state.extra as SymptomResultEntity,
+                    ),
                   ),
                 ],
               ),
