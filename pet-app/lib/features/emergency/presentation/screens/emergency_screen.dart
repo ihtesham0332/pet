@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../pet/presentation/providers/pet_provider.dart';
 
-class EmergencyScreen extends ConsumerWidget {
+class EmergencyScreen extends ConsumerStatefulWidget {
   const EmergencyScreen({super.key});
+
+  @override
+  ConsumerState<EmergencyScreen> createState() => _EmergencyScreenState();
+}
+
+class _EmergencyScreenState extends ConsumerState<EmergencyScreen> {
 
   static const List<Map<String, dynamic>> _emergencyContacts = [
     {'name': 'Emergency Vet', 'phone': '+1-800-555-VETS', 'icon': Icons.local_hospital},
@@ -26,8 +33,41 @@ class EmergencyScreen extends ConsumerWidget {
     {'symptom': 'Unconscious', 'action': 'CPR, rush to vet'},
   ];
 
+  Future<void> _findNearestVet() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permission permanently denied. Enable it in Settings.')),
+          );
+        }
+        return;
+      }
+
+      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+      final uri = Uri.parse(
+        'https://www.google.com/maps/search/veterinarian/@${pos.latitude},${pos.longitude},15z',
+      );
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not find nearby vets: $e')),
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Emergency'),
@@ -103,7 +143,7 @@ class EmergencyScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: _findNearestVet,
                       icon: const Icon(Icons.location_on),
                       label: const Text('Find Nearest Vet'),
                       style: OutlinedButton.styleFrom(
