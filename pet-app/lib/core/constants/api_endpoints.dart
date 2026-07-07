@@ -16,6 +16,7 @@ class ApiEndpoints {
   // Pets
   static const String pets = '/pets';
   static String petById(String id) => '/pets/$id';
+  static String petDelete(String id) => '/pets/$id';
   static String petMedicalHistory(String id) => '/pets/$id/medical-history';
   static String petVaccinations(String id) => '/pets/$id/vaccinations';
 

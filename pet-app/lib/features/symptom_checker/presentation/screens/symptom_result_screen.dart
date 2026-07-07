@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/risk_badge.dart';
+import '../../../pet/presentation/providers/pet_provider.dart';
 import '../../domain/symptom_result_entity.dart';
 
 class SymptomResultScreen extends ConsumerStatefulWidget {
@@ -53,12 +54,15 @@ class _SymptomResultScreenState extends ConsumerState<SymptomResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final petId = GoRouterState.of(context).pathParameters['petId'] ?? '';
+    final pet = ref.watch(petProvider).pets.where((p) => p.id == petId).firstOrNull;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analysis Result'),
+        title: Text(pet != null ? '${pet.name} - Result' : 'Analysis Result'),
         actions: [
           TextButton(
-            onPressed: () => context.pop(),
+            onPressed: () => context.push('/pets/$petId/symptom-checker'),
             child: const Text('New Check'),
           ),
         ],
@@ -167,6 +171,30 @@ class _SymptomResultScreenState extends ConsumerState<SymptomResultScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+
+            // Pet Info
+            if (pet != null)
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.pets, size: 16, color: AppTheme.primaryGreen),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${pet.name} · ${pet.breed ?? pet.species}',
+                        style: const TextStyle(fontSize: 13, color: AppTheme.primaryGreen, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             const SizedBox(height: 16),
 
             // AI Provider

@@ -20,6 +20,32 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
     Future.microtask(() => ref.read(petProvider.notifier).loadPets());
   }
 
+  Future<void> _deletePet(PetEntity pet) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Pet'),
+        content: Text('Remove ${pet.name}? All health records will be permanently deleted.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.emergencyRed),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      final ok = await ref.read(petProvider.notifier).deletePet(pet.id);
+      if (!ok && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete pet. Please try again.')),
+        );
+      }
+    }
+  }
+
   void _openSymptomChecker() {
     final state = ref.read(petProvider);
     final pets = state.pets;
@@ -153,7 +179,28 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
       child: ListView.builder(
         padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
         itemCount: state.pets.length,
-        itemBuilder: (_, i) => _PetCard(pet: state.pets[i]),
+        itemBuilder: (_, i) {
+          final pet = state.pets[i];
+          return Dismissible(
+            key: ValueKey(pet.id),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.emergencyRed,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            confirmDismiss: (_) async {
+              await _deletePet(pet);
+              return false;
+            },
+            child: _PetCard(pet: pet),
+          );
+        },
       ),
     );
   }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../pet/domain/pet_entity.dart';
+import '../../../pet/presentation/providers/pet_provider.dart';
 import '../../data/symptom_repository.dart';
 
 class SymptomInputScreen extends ConsumerStatefulWidget {
@@ -17,11 +19,23 @@ class SymptomInputScreen extends ConsumerStatefulWidget {
 class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
   final _textController = TextEditingController();
   bool _isAnalyzing = false;
+  late String _selectedPetId;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedPetId = widget.petId;
+  }
 
   @override
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+
+  PetEntity? get _selectedPet {
+    final pets = ref.read(petProvider).pets;
+    return pets.where((p) => p.id == _selectedPetId).firstOrNull;
   }
 
   Future<void> _analyze() async {
@@ -32,12 +46,12 @@ class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
     try {
       final repo = ref.read(symptomRepositoryProvider);
       final result = await repo.analyzeSymptoms(
-        petId: widget.petId,
+        petId: _selectedPetId,
         text: _textController.text.trim(),
       );
 
       if (mounted) {
-        context.push('/pets/${widget.petId}/symptom-result', extra: result);
+        context.push('/pets/$_selectedPetId/symptom-result', extra: result);
       }
     } catch (e) {
       if (mounted) {
@@ -50,8 +64,15 @@ class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
     }
   }
 
+  void _switchPet(String petId) {
+    setState(() => _selectedPetId = petId);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final pets = ref.watch(petProvider).pets;
+    final pet = _selectedPet;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Check Symptoms')),
       body: SingleChildScrollView(
@@ -59,6 +80,50 @@ class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Pet Selector
+            Card(
+              child: InkWell(
+                onTap: pets.length > 1
+                    ? () => _showPetPicker(context, pets)
+                    : null,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                        child: Icon(Icons.pets, color: AppTheme.primaryGreen, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              pet?.name ?? 'Select Pet',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            if (pet != null)
+                              Text(
+                                '${pet.breed ?? pet.species} · ${pet.age} yrs',
+                                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                              ),
+                          ],
+                        ),
+                      ),
+                      if (pets.length > 1)
+                        const Icon(Icons.swap_vert, color: AppTheme.textSecondary),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             Text(
               'Describe your pet\'s symptoms',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -114,6 +179,38 @@ class _SymptomInputScreenState extends ConsumerState<SymptomInputScreen> {
                   ),
               textAlign: TextAlign.center,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPetPicker(BuildContext context, List<PetEntity> pets) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Select Pet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+            ...pets.map((p) => ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                    child: Icon(Icons.pets, color: AppTheme.primaryGreen),
+                  ),
+                  title: Text(p.name),
+                  subtitle: Text('${p.breed ?? p.species} · ${p.age} yrs'),
+                  trailing: p.id == _selectedPetId
+                      ? const Icon(Icons.check, color: AppTheme.primaryGreen)
+                      : null,
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _switchPet(p.id);
+                  },
+                )),
           ],
         ),
       ),

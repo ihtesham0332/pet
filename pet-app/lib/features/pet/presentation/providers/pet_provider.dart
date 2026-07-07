@@ -122,6 +122,21 @@ class PetProvider extends StateNotifier<PetListState> {
       return false;
     }
   }
+
+  Future<bool> deletePet(String id) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repository.deletePet(id);
+      state = state.copyWith(
+        isLoading: false,
+        pets: state.pets.where((p) => p.id != id).toList(),
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
 }
 
 final petProvider = StateNotifierProvider<PetProvider, PetListState>((ref) {

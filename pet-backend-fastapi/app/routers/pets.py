@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -5,6 +7,10 @@ from sqlalchemy import select
 from app.database import get_db
 from app.models.user import User
 from app.models.pet import Pet
+from app.models.symptom_record import SymptomRecord
+from app.models.reminder import Reminder
+from app.models.emergency_event import EmergencyEvent
+from app.models.appointment import Appointment
 from app.schemas.pet import PetCreate, PetUpdate, PetOut
 from app.utils.security import get_current_user
 
@@ -53,8 +59,9 @@ async def get_pet(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    pet_uuid = uuid.UUID(pet_id)
     result = await db.execute(
-        select(Pet).where(Pet.id == pet_id, Pet.user_id == current_user.id)
+        select(Pet).where(Pet.id == pet_uuid, Pet.user_id == current_user.id)
     )
     pet = result.scalar_one_or_none()
     if not pet:
@@ -69,8 +76,9 @@ async def update_pet(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    pet_uuid = uuid.UUID(pet_id)
     result = await db.execute(
-        select(Pet).where(Pet.id == pet_id, Pet.user_id == current_user.id)
+        select(Pet).where(Pet.id == pet_uuid, Pet.user_id == current_user.id)
     )
     pet = result.scalar_one_or_none()
     if not pet:
@@ -91,12 +99,34 @@ async def delete_pet(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    pet_uuid = uuid.UUID(pet_id)
+
     result = await db.execute(
-        select(Pet).where(Pet.id == pet_id, Pet.user_id == current_user.id)
+        select(Pet).where(Pet.id == pet_uuid, Pet.user_id == current_user.id)
     )
     pet = result.scalar_one_or_none()
     if not pet:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pet not found")
+
+    for record in (await db.execute(
+        select(SymptomRecord).where(SymptomRecord.pet_id == pet_uuid)
+    )).scalars().all():
+        await db.delete(record)
+
+    for record in (await db.execute(
+        select(Reminder).where(Reminder.pet_id == pet_uuid)
+    )).scalars().all():
+        await db.delete(record)
+
+    for record in (await db.execute(
+        select(EmergencyEvent).where(EmergencyEvent.pet_id == pet_uuid)
+    )).scalars().all():
+        await db.delete(record)
+
+    for record in (await db.execute(
+        select(Appointment).where(Appointment.pet_id == pet_uuid)
+    )).scalars().all():
+        await db.delete(record)
 
     await db.delete(pet)
     await db.commit()

@@ -5,15 +5,50 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/pet_provider.dart';
 
-class PetDetailScreen extends ConsumerWidget {
+class PetDetailScreen extends ConsumerStatefulWidget {
   final String petId;
 
   const PetDetailScreen({super.key, required this.petId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PetDetailScreen> createState() => _PetDetailScreenState();
+}
+
+class _PetDetailScreenState extends ConsumerState<PetDetailScreen> {
+  Future<void> _deletePet() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Pet'),
+        content: const Text('Are you sure? All health records and history will be permanently removed.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.emergencyRed),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      final ok = await ref.read(petProvider.notifier).deletePet(widget.petId);
+      if (mounted) {
+        if (ok) {
+          context.go('/pets');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to delete pet. Please try again.')),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(petProvider);
-    final pet = state.pets.where((p) => p.id == petId).firstOrNull;
+    final pet = state.pets.where((p) => p.id == widget.petId).firstOrNull;
 
     if (pet == null) {
       return Scaffold(
@@ -23,7 +58,15 @@ class PetDetailScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(pet.name)),
+      appBar: AppBar(
+        title: Text(pet.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.white),
+            onPressed: _deletePet,
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -62,7 +105,7 @@ class PetDetailScreen extends ConsumerWidget {
                     icon: Icons.healing,
                     label: 'Check\nSymptoms',
                     color: AppTheme.infoBlue,
-                    onTap: () => context.push('/pets/$petId/symptom-checker'),
+                    onTap: () => context.push('/pets/${widget.petId}/symptom-checker'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -77,10 +120,10 @@ class PetDetailScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _ActionCard(
-                    icon: Icons.restaurant,
-                    label: 'Food\nRecommend',
-                    color: AppTheme.accentOrange,
-                    onTap: () {},
+                    icon: Icons.history,
+                    label: 'View\nHistory',
+                    color: AppTheme.primaryGreen,
+                    onTap: () => context.push('/pets/${widget.petId}/symptom-history'),
                   ),
                 ),
               ],
@@ -179,5 +222,3 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
-
-

@@ -27,6 +27,10 @@ class PetRepository {
     final response = await _apiClient.put(ApiEndpoints.petById(id), data: data);
     return response.data;
   }
+
+  Future<void> deletePet(String id) async {
+    await _apiClient.delete(ApiEndpoints.petDelete(id));
+  }
 }
 
 final petRepositoryProvider = Provider<PetRepository>((ref) {
