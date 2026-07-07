@@ -21,8 +21,9 @@ class ApiEndpoints {
 
   // Symptoms
   static const String symptomAnalyze = '/symptoms/analyze';
-  static const String symptomHistory = '/symptoms/history';
+  static String symptomHistory(String petId) => '/symptoms/pet/$petId';
   static String symptomById(String id) => '/symptoms/$id';
+  static String symptomDelete(String id) => '/symptoms/$id';
 
   // Emergency
   static const String emergencyCheck = '/emergency/check';

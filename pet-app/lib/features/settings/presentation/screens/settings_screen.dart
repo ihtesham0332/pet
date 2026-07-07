@@ -9,6 +9,8 @@ import '../../../../shared/providers/theme_provider.dart';
 import '../../../../shared/providers/locale_provider.dart';
 import '../../../../shared/providers/notification_settings_provider.dart';
 import '../../../../shared/providers/translation_provider.dart';
+import '../../../pet/domain/pet_entity.dart';
+import '../../../pet/presentation/providers/pet_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -47,6 +49,14 @@ class SettingsScreen extends ConsumerWidget {
                   title: Text(t.tr('my_pets')),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.go('/pets'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.history, color: AppTheme.primaryGreen),
+                  title: const Text('Symptom History'),
+                  subtitle: const Text('View past symptom checks'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _openSymptomHistory(context, ref),
                 ),
               ],
             ),
@@ -136,6 +146,42 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  void _openSymptomHistory(BuildContext context, WidgetRef ref) {
+    final pets = ref.read(petProvider).pets;
+    if (pets.isEmpty) {
+      context.go('/pets');
+      return;
+    }
+    if (pets.length == 1) {
+      context.push('/pets/${pets.first.id}/symptom-history');
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Select Pet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+            ...pets.map((pet) => ListTile(
+                  leading: CircleAvatar(child: Icon(pet.species == 'cat' ? Icons.pets : Icons.pets)),
+                  title: Text(pet.name),
+                  subtitle: Text(pet.breed ?? pet.species),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    context.push('/pets/${pet.id}/symptom-history');
+                  },
+                )),
+          ],
+        ),
       ),
     );
   }

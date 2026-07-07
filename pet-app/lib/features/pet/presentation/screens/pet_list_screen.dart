@@ -20,6 +20,56 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
     Future.microtask(() => ref.read(petProvider.notifier).loadPets());
   }
 
+  void _openSymptomChecker() {
+    final state = ref.read(petProvider);
+    final pets = state.pets;
+
+    if (pets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add a pet first to check symptoms')),
+      );
+      return;
+    }
+
+    if (pets.length == 1) {
+      context.push('/pets/${pets.first.id}/symptom-checker');
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Select a pet',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ),
+            const Divider(height: 1),
+            ...pets.map((pet) => ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                    child: Icon(Icons.pets, color: AppTheme.primaryGreen),
+                  ),
+                  title: Text(pet.name),
+                  subtitle: Text(pet.species),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    context.push('/pets/${pet.id}/symptom-checker');
+                  },
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(petProvider);
@@ -38,6 +88,13 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
         ],
       ),
       body: _buildBody(state),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openSymptomChecker,
+        icon: const Icon(Icons.healing),
+        label: const Text('Check Symptoms'),
+        backgroundColor: AppTheme.infoBlue,
+        foregroundColor: Colors.white,
+      ),
     );
   }
 
@@ -94,7 +151,7 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
     return RefreshIndicator(
       onRefresh: () => ref.read(petProvider.notifier).loadPets(),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
         itemCount: state.pets.length,
         itemBuilder: (_, i) => _PetCard(pet: state.pets[i]),
       ),

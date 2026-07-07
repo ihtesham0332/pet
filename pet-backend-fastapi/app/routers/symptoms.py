@@ -77,3 +77,27 @@ async def symptom_history(
     )
     records = result.scalars().all()
     return [SymptomRecordOut.model_validate(r) for r in records]
+
+
+@router.delete("/{record_id}", status_code=204)
+async def delete_symptom_record(
+    record_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    record_uuid = uuid.UUID(record_id)
+    result = await db.execute(
+        select(SymptomRecord).where(SymptomRecord.id == record_uuid)
+    )
+    record = result.scalar_one_or_none()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    pet_result = await db.execute(
+        select(Pet).where(Pet.id == record.pet_id, Pet.user_id == current_user.id)
+    )
+    if not pet_result.scalar_one_or_none():
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    await db.delete(record)
+    await db.commit()

@@ -183,7 +183,10 @@ class _SymptomResultScreenState extends ConsumerState<SymptomResultScreen> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      final petId = GoRouterState.of(context).pathParameters['petId'] ?? '';
+                      context.push('/pets/$petId/symptom-history');
+                    },
                     icon: const Icon(Icons.history),
                     label: const Text('View History'),
                   ),
@@ -194,7 +197,11 @@ class _SymptomResultScreenState extends ConsumerState<SymptomResultScreen> {
                     onPressed: _findNearestVet,
                     icon: const Icon(Icons.local_hospital),
                     label: const Text('Find Vet'),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.infoBlue),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
               ],

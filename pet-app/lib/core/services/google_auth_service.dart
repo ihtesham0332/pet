@@ -13,19 +13,27 @@ class GoogleAuthService {
   }
 
   Future<Map<String, dynamic>?> signIn() async {
-    await _googleSignIn.signOut();
-    final account = await _googleSignIn.signIn();
-    if (account == null) return null;
+    try {
+      await _googleSignIn.signOut();
+      final account = await _googleSignIn.signIn();
+      if (account == null) {
+        return null;
+      }
 
-    final auth = await account.authentication;
-    if (auth.idToken == null) throw Exception('No ID token from Google');
+      final auth = await account.authentication;
+      if (auth.idToken == null) {
+        throw Exception('Failed to retrieve Google authentication token');
+      }
 
-    final response = await _apiClient.post(
-      ApiEndpoints.googleAuth,
-      data: {'id_token': auth.idToken},
-    );
+      final response = await _apiClient.post(
+        ApiEndpoints.googleAuth,
+        data: {'id_token': auth.idToken},
+      );
 
-    return response.data as Map<String, dynamic>;
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> signOut() async {

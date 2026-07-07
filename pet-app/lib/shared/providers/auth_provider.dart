@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/domain/user_entity.dart';
-import '../../core/services/google_auth_service.dart';
 
 class AuthProvider extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
@@ -16,11 +15,13 @@ class AuthProvider extends StateNotifier<AuthState> {
       try {
         final data = await _authRepository.fetchProfile();
         final user = AuthRepository.userFromJson(data);
-        state = state.copyWith(isAuthenticated: true, user: user);
+        state = state.copyWith(isLoading: false, isAuthenticated: true, user: user);
+        return;
       } catch (_) {
         await _authRepository.logout();
       }
     }
+    state = state.copyWith(isLoading: false);
   }
 
   Future<void> login(String email, String password) async {
@@ -69,7 +70,7 @@ class AuthProvider extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _authRepository.logout();
-    state = AuthState.initial();
+    state = const AuthState(isLoading: false);
   }
 
   Future<void> googleSignIn() async {
@@ -103,7 +104,7 @@ class AuthState {
     this.error,
   });
 
-  factory AuthState.initial() => const AuthState();
+  factory AuthState.initial() => const AuthState(isLoading: true);
 
   AuthState copyWith({
     bool? isLoading,

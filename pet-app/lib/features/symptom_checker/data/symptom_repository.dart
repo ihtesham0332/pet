@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/network/api_client.dart';
+import '../domain/symptom_history_entity.dart';
 import '../domain/symptom_result_entity.dart';
 
 class SymptomRepository {
@@ -29,6 +30,18 @@ class SymptomRepository {
       },
     );
     return SymptomResultEntity.fromJson(response.data);
+  }
+
+  Future<void> deleteHistory(String id) async {
+    await _apiClient.delete(ApiEndpoints.symptomDelete(id));
+  }
+
+  Future<List<SymptomHistoryEntity>> getHistory(String petId) async {
+    final response = await _apiClient.get(
+      ApiEndpoints.symptomHistory(petId),
+    );
+    final list = response.data as List<dynamic>;
+    return list.map((e) => SymptomHistoryEntity.fromJson(e as Map<String, dynamic>)).toList();
   }
 }
 
