@@ -6,7 +6,7 @@ from loguru import logger
 
 from app.config import settings
 from app.database import init_db, close_db
-from app.routers import auth, users, pets, symptoms, emergency, recommendations, veterinary, admin, reminders, subscriptions
+from app.routers import auth, users, pets, symptoms, emergency, recommendations, veterinary, admin, reminders, subscriptions, notifications
 
 from app.routers.auth_google import router as google_router
 def custom_openapi():
@@ -72,6 +72,7 @@ app.include_router(veterinary.router)
 app.include_router(admin.router)
 app.include_router(reminders.router)
 app.include_router(subscriptions.router)
+app.include_router(notifications.router)
 
 
 @app.get("/")

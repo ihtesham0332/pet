@@ -45,6 +45,13 @@ class ApiEndpoints {
       '/reminders?upcoming=true${type != null ? '&type=$type' : ''}';
   static String remindersByType(String type) => '/reminders?type=$type';
 
+  // Notifications
+  static const String notificationSettings = '/notifications/settings';
+  static const String notifications = '/notifications';
+  static const String notificationsUnreadCount = '/notifications/unread-count';
+  static String notificationRead(String id) => '/notifications/$id/read';
+  static const String notificationsReadAll = '/notifications/read-all';
+
   // Subscriptions
   static const String subscribe = '/subscriptions';
   static const String subscriptionStatus = '/subscriptions/status';

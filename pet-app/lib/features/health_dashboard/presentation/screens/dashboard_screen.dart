@@ -202,7 +202,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
@@ -215,7 +215,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               height: 14,
                               width: 150,
                               decoration: BoxDecoration(
-                                color: Colors.grey[300],
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -224,7 +224,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               height: 12,
                               width: 100,
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -235,7 +235,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         width: 60,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -273,20 +273,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            Icon(Icons.cloud_off, size: 48, color: Colors.grey[400]),
+            Icon(Icons.cloud_off, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
             const SizedBox(height: 12),
             Text(
               'Could not load reminders',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               error,
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -313,20 +313,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           padding: const EdgeInsets.all(32),
           child: Column(
             children: [
-              Icon(Icons.event_note, size: 48, color: Colors.grey[400]),
+              Icon(Icons.event_note, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
               const SizedBox(height: 12),
               Text(
                 'No upcoming reminders',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Add vaccination, check-up, or medication reminders',
-                style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 16),
               OutlinedButton.icon(
@@ -466,7 +466,7 @@ class _ReminderCard extends StatelessWidget {
                       dateFormat.format(reminder.scheduledDate),
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[600],
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     if (reminder.description != null &&
@@ -477,7 +477,7 @@ class _ReminderCard extends StatelessWidget {
                           reminder.description!,
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[500],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

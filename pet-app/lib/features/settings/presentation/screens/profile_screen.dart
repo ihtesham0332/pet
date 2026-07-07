@@ -113,7 +113,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(height: 4),
                 Text(
                   user?.email ?? '',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 8),
                 Chip(
@@ -122,7 +122,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
                   ),
                   backgroundColor: user?.subscriptionTier == 'free'
-                      ? Colors.grey.withOpacity(0.15)
+                      ? Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.15)
                       : AppTheme.primaryGreen.withOpacity(0.15),
                   side: BorderSide.none,
                 ),

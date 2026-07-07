@@ -106,10 +106,10 @@ class _SymptomHistoryScreenState extends ConsumerState<SymptomHistoryScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.history, size: 64, color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+                  Icon(Icons.history, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
                   const SizedBox(height: 16),
                   Text('No symptom checks yet',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppTheme.textSecondary)),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () => context.push('/pets/${widget.petId}/symptom-checker'),

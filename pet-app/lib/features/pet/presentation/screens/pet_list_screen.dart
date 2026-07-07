@@ -134,9 +134,9 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 60, color: Colors.grey[400]),
+            Icon(Icons.error_outline, size: 60, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
             const SizedBox(height: 16),
-            Text('Could not load pets', style: TextStyle(color: Colors.grey[600])),
+            Text('Could not load pets', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.read(petProvider.notifier).loadPets(),
@@ -152,11 +152,11 @@ class _PetListScreenState extends ConsumerState<PetListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.pets, size: 80, color: Colors.grey[300]),
+            Icon(Icons.pets, size: 80, color: Theme.of(context).colorScheme.surfaceContainerHighest),
             const SizedBox(height: 16),
             Text(
               'Add your first pet!',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             const Text('Track their health with AI assistance'),

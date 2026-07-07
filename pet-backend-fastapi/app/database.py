@@ -40,6 +40,23 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    # Migration: add notification_settings column to users table if missing
+    if _is_sqlite:
+        from sqlalchemy import text as sa_text
+        async with engine.connect() as conn:
+            result = await conn.execute(
+                sa_text("PRAGMA table_info(users)")
+            )
+            columns = {row[1] for row in result.fetchall()}
+            if "notification_settings" not in columns:
+                from sqlalchemy import text as alter_text
+                await conn.execute(
+                    alter_text(
+                        "ALTER TABLE users ADD COLUMN notification_settings JSON"
+                    )
+                )
+                await conn.commit()
+
 
 async def close_db():
     await engine.dispose()

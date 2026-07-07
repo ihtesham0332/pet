@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/services/notification_service.dart';
 import '../../../../shared/widgets/risk_badge.dart';
 import '../../../pet/presentation/providers/pet_provider.dart';
 import '../../domain/symptom_result_entity.dart';
@@ -19,6 +20,8 @@ class SymptomResultScreen extends ConsumerStatefulWidget {
 }
 
 class _SymptomResultScreenState extends ConsumerState<SymptomResultScreen> {
+  bool _notificationShown = false;
+
   Future<void> _findNearestVet() async {
     try {
       LocationPermission permission = await Geolocator.checkPermission();
@@ -57,6 +60,25 @@ class _SymptomResultScreenState extends ConsumerState<SymptomResultScreen> {
     final petId = GoRouterState.of(context).pathParameters['petId'] ?? '';
     final pet = ref.watch(petProvider).pets.where((p) => p.id == petId).firstOrNull;
 
+    if (!_notificationShown && pet != null) {
+      _notificationShown = true;
+      notificationService.showSymptomAlert(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        petName: pet.name,
+        riskLevel: widget.result.riskLevel,
+      );
+      if (widget.result.isEmergency) {
+        final action = widget.result.emergencyActions?.isNotEmpty == true
+            ? widget.result.emergencyActions!.first
+            : 'Seek immediate veterinary care';
+        notificationService.showEmergencyAlert(
+          id: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 1,
+          petName: pet.name,
+          action: action,
+        );
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(pet != null ? '${pet.name} - Result' : 'Analysis Result'),
@@ -89,7 +111,7 @@ class _SymptomResultScreenState extends ConsumerState<SymptomResultScreen> {
                     const SizedBox(height: 16),
                     LinearProgressIndicator(
                       value: widget.result.confidence,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                       color: _getConfidenceColor(widget.result.confidence),
                       minHeight: 8,
                       borderRadius: BorderRadius.circular(4),
@@ -97,7 +119,7 @@ class _SymptomResultScreenState extends ConsumerState<SymptomResultScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'AI Confidence: ${(widget.result.confidence * 100).toStringAsFixed(0)}%',
-                      style: TextStyle(color: AppTheme.textSecondary),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),

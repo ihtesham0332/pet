@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import String, Column, DateTime, Text, Uuid
+from sqlalchemy import String, Column, DateTime, Text, Uuid, JSON
 
 from app.database import Base
 
@@ -16,6 +16,7 @@ class User(Base):
     role = Column(String(50), default="owner")
     subscription_tier = Column(String(50), default="free")
     photo_url = Column(Text, nullable=True)
+    notification_settings = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(
         DateTime(timezone=True),

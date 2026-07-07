@@ -92,7 +92,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
             ],
             isCurrent: tier == 'free',
             onUpgrade: null,
-            color: Colors.grey,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 12),
           _PlanCard(
@@ -218,7 +218,7 @@ class _PlanCard extends StatelessWidget {
                     )),
                 if (period != null)
                   Text(period!,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               ],
             ),
             const SizedBox(height: 12),

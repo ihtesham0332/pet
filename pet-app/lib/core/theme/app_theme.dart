@@ -79,20 +79,45 @@ class AppTheme {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
+      dividerTheme: const DividerThemeData(
+        color: borderLight,
+        thickness: 1,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: surfaceLight,
+        indicatorColor: primaryGreen.withOpacity(0.2),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: primaryGreen);
+          }
+          return const IconThemeData(color: textSecondary);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(color: primaryGreen, fontSize: 12, fontWeight: FontWeight.w600);
+          }
+          return const TextStyle(color: textSecondary, fontSize: 12);
+        }),
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: surfaceLight,
+      ),
     );
   }
 
   static ThemeData get darkTheme {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: primaryGreen,
+      brightness: Brightness.dark,
+      primary: primaryLight,
+      secondary: accentOrange,
+      error: emergencyRed,
+    );
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryGreen,
-        brightness: Brightness.dark,
-        primary: primaryLight,
-        secondary: accentOrange,
-        error: emergencyRed,
-      ),
+      colorScheme: scheme,
       scaffoldBackgroundColor: backgroundDark,
       appBarTheme: const AppBarTheme(
         backgroundColor: surfaceDark,
@@ -104,6 +129,58 @@ class AppTheme {
         color: surfaceDark,
         elevation: 1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryLight,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(double.infinity, 48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: surfaceDark,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[700]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[700]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryLight, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFF2C2C2C),
+        thickness: 1,
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: primaryLight,
+        foregroundColor: Colors.white,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: surfaceDark,
+        indicatorColor: primaryLight.withOpacity(0.2),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: primaryLight);
+          }
+          return const IconThemeData(color: textSecondaryDark);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(color: primaryLight, fontSize: 12, fontWeight: FontWeight.w600);
+          }
+          return const TextStyle(color: textSecondaryDark, fontSize: 12);
+        }),
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: surfaceDark,
       ),
     );
   }

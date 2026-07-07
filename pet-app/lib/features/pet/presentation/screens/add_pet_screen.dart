@@ -199,7 +199,7 @@ class _SpeciesButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.primaryGreen.withOpacity(0.1) : Colors.grey[100],
+          color: selected ? AppTheme.primaryGreen.withOpacity(0.1) : Theme.of(context).colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? AppTheme.primaryGreen : Colors.transparent,
@@ -208,10 +208,10 @@ class _SpeciesButton extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: selected ? AppTheme.primaryGreen : Colors.grey),
+            Icon(icon, color: selected ? AppTheme.primaryGreen : Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(height: 4),
             Text(label, style: TextStyle(
-              color: selected ? AppTheme.primaryGreen : Colors.grey,
+              color: selected ? AppTheme.primaryGreen : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: selected ? FontWeight.bold : FontWeight.normal,
             )),
           ],

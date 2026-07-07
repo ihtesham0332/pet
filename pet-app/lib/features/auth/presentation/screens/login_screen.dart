@@ -70,7 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   'Welcome Back',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppTheme.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -79,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   'Sign in to continue caring for your pets',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppTheme.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -181,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: Text(
                         'or continue with',
                         style: TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 13,
                         ),
                       ),
@@ -200,7 +200,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: TextStyle(color: AppTheme.textSecondary),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                     TextButton(
                       onPressed: () => context.push('/register'),
@@ -234,9 +234,9 @@ class _GoogleSignInButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          side: BorderSide(color: Colors.grey.shade300),
-          backgroundColor: Colors.white,
-          foregroundColor: AppTheme.textPrimary,
+          side: BorderSide(color: Theme.of(context).colorScheme.outline),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         child: isLoading
@@ -254,10 +254,10 @@ class _GoogleSignInButton extends StatelessWidget {
                     child: Image.network(
                       'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(
+                      errorBuilder: (_, __, ___) => Icon(
                         Icons.g_mobiledata,
                         size: 24,
-                        color: Colors.grey,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),

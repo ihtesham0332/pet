@@ -254,98 +254,99 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showNotificationSettings(BuildContext context, WidgetRef ref) {
-    final t = ref.read(translationProvider);
-    final notif = ref.watch(notificationSettingsProvider);
-    final allOn = notif.pushEnabled &&
-        notif.emailEnabled &&
-        notif.appointmentReminders &&
-        notif.vaccinationReminders &&
-        notif.checkupReminders &&
-        notif.symptomAlerts &&
-        notif.emergencyAlerts;
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.tr('notification_settings')),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SwitchListTile(
-                  title: Text(allOn ? 'Disable All' : 'Enable All'),
-                  subtitle: Text(allOn ? 'Turn off all notifications' : 'Turn on all notifications'),
-                  value: allOn,
-                  onChanged: (v) {
-                    ref.read(notificationSettingsProvider.notifier).toggleAll(v);
-                  },
-                  secondary: Icon(allOn ? Icons.notifications_off : Icons.notifications),
-                ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  title: Text(t.tr('push_notifications')),
-                  subtitle: Text(t.tr('receive_push_alerts')),
-                  value: notif.pushEnabled,
-                  onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setPushEnabled(v),
-                  secondary: const Icon(Icons.notifications_active),
-                ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  title: Text(t.tr('email_notifications')),
-                  subtitle: Text(t.tr('receive_email_alerts')),
-                  value: notif.emailEnabled,
-                  onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setEmailEnabled(v),
-                  secondary: const Icon(Icons.email),
-                ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  title: Text(t.tr('appointment_reminders')),
-                  value: notif.appointmentReminders,
-                  onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setAppointmentReminders(v),
-                  secondary: const Icon(Icons.calendar_today),
-                ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  title: Text(t.tr('vaccination_reminders')),
-                  value: notif.vaccinationReminders,
-                  onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setVaccinationReminders(v),
-                  secondary: const Icon(Icons.vaccines),
-                ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  title: Text(t.tr('checkup_reminders')),
-                  value: notif.checkupReminders,
-                  onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setCheckupReminders(v),
-                  secondary: const Icon(Icons.medical_services),
-                ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  title: Text(t.tr('symptom_alerts')),
-                  value: notif.symptomAlerts,
-                  onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setSymptomAlerts(v),
-                  secondary: const Icon(Icons.healing),
-                ),
-                const Divider(height: 1),
-                SwitchListTile(
-                  title: Text(t.tr('emergency_alerts')),
-                  subtitle: Text(t.tr('critical_health_warnings')),
-                  value: notif.emergencyAlerts,
-                  onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setEmergencyAlerts(v),
-                  secondary: const Icon(Icons.warning, color: AppTheme.emergencyRed),
-                ),
-              ],
+      builder: (ctx) => Consumer(builder: (context, ref, _) {
+        final notif = ref.watch(notificationSettingsProvider);
+        final allOn = notif.pushEnabled &&
+            notif.emailEnabled &&
+            notif.appointmentReminders &&
+            notif.vaccinationReminders &&
+            notif.checkupReminders &&
+            notif.symptomAlerts &&
+            notif.emergencyAlerts;
+
+        return AlertDialog(
+          title: const Text('Notification Settings'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SwitchListTile(
+                    title: Text(allOn ? 'Disable All' : 'Enable All'),
+                    subtitle: Text(allOn ? 'Turn off all notifications' : 'Turn on all notifications'),
+                    value: allOn,
+                    onChanged: (v) {
+                      ref.read(notificationSettingsProvider.notifier).toggleAll(v);
+                    },
+                    secondary: Icon(allOn ? Icons.notifications_off : Icons.notifications),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Push Notifications'),
+                    subtitle: const Text('Receive push alerts'),
+                    value: notif.pushEnabled,
+                    onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setPushEnabled(v),
+                    secondary: const Icon(Icons.notifications_active),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Email Notifications'),
+                    subtitle: const Text('Receive email alerts'),
+                    value: notif.emailEnabled,
+                    onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setEmailEnabled(v),
+                    secondary: const Icon(Icons.email),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Appointment Reminders'),
+                    value: notif.appointmentReminders,
+                    onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setAppointmentReminders(v),
+                    secondary: const Icon(Icons.calendar_today),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Vaccination Reminders'),
+                    value: notif.vaccinationReminders,
+                    onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setVaccinationReminders(v),
+                    secondary: const Icon(Icons.vaccines),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Check-up Reminders'),
+                    value: notif.checkupReminders,
+                    onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setCheckupReminders(v),
+                    secondary: const Icon(Icons.medical_services),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Symptom Alerts'),
+                    value: notif.symptomAlerts,
+                    onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setSymptomAlerts(v),
+                    secondary: const Icon(Icons.healing),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Emergency Alerts'),
+                    subtitle: const Text('Critical health warnings'),
+                    value: notif.emergencyAlerts,
+                    onChanged: (v) => ref.read(notificationSettingsProvider.notifier).setEmergencyAlerts(v),
+                    secondary: const Icon(Icons.warning, color: AppTheme.emergencyRed),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(t.tr('done')),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Done'),
+            ),
+          ],
+        );
+      }),
     );
   }
 }

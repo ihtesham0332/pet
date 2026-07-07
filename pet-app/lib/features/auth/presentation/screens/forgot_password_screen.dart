@@ -29,7 +29,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 40),
-              const Icon(Icons.lock_reset, size: 64, color: Colors.grey),
+              Icon(Icons.lock_reset, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
               const SizedBox(height: 24),
               Text(
                 'Forgot your password?',
@@ -39,7 +39,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 8),
               Text(
                 'Enter your email and we\'ll send you a reset link.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),

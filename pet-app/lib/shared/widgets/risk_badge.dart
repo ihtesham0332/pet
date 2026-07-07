@@ -11,7 +11,7 @@ class RiskBadge extends StatelessWidget {
     this.size = 12,
   });
 
-  Color get _color {
+  Color _getColor(BuildContext context) {
     switch (riskLevel.toLowerCase()) {
       case 'low':
         return AppTheme.riskLow;
@@ -22,7 +22,7 @@ class RiskBadge extends StatelessWidget {
       case 'critical':
         return AppTheme.riskCritical;
       default:
-        return Colors.grey;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
     }
   }
 
@@ -53,7 +53,7 @@ class RiskBadge extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      backgroundColor: _color,
+      backgroundColor: _getColor(context),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     );
   }
