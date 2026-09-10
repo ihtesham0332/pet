@@ -1,14 +1,15 @@
+import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
-import '../../../core/constants/api_endpoints.dart';
-import '../../../core/network/api_client.dart';
+import '../../../core/services/local_database_service.dart';
 import '../domain/symptom_history_entity.dart';
 import '../domain/symptom_result_entity.dart';
 
 class SymptomRepository {
-  final ApiClient _apiClient;
+  final LocalDatabaseService _db;
 
-  SymptomRepository(this._apiClient);
+  SymptomRepository(this._db);
 
   Future<SymptomResultEntity> analyzeSymptoms({
     required String petId,
@@ -18,34 +19,63 @@ class SymptomRepository {
     String? petBreed,
     double? petWeightKg,
   }) async {
-    final response = await _apiClient.post(
-      ApiEndpoints.symptomAnalyze,
-      data: {
-        'pet_id': petId,
-        'text': text,
-        if (petSpecies != null) 'pet_species': petSpecies,
-        if (petAge != null) 'pet_age': petAge,
-        if (petBreed != null) 'pet_breed': petBreed,
-        if (petWeightKg != null) 'pet_weight_kg': petWeightKg,
-      },
+    // Mock a delay for "AI thinking"
+    await Future.delayed(const Duration(seconds: 2));
+
+    final random = Random();
+    final isEmergency = text.toLowerCase().contains('blood') || text.toLowerCase().contains('seizure') || text.toLowerCase().contains('collapse');
+    
+    final possibleConditions = isEmergency 
+      ? ['Internal Bleeding', 'Severe Trauma', 'Poisoning']
+      : ['Upset Stomach', 'Mild Allergies', 'Dietary Indiscretion'];
+
+    final result = SymptomResultEntity(
+      riskLevel: isEmergency ? 'high' : (random.nextBool() ? 'low' : 'medium'),
+      possibleConditions: possibleConditions,
+      confidence: 0.7 + (random.nextDouble() * 0.2), // 0.7 to 0.9
+      recommendation: isEmergency 
+        ? 'Go to an emergency vet immediately.' 
+        : 'Monitor for 24 hours. If symptoms worsen, consult a vet.',
+      isEmergency: isEmergency,
+      emergencyActions: isEmergency ? ['Keep pet calm', 'Do not feed', 'Transport carefully'] : null,
+      aiProvider: 'mock_local_ai',
     );
-    return SymptomResultEntity.fromJson(response.data);
+
+    // Save to history
+    final historyEntry = {
+      'id': const Uuid().v4(),
+      'pet_id': petId,
+      'symptoms_text': text,
+      'created_at': DateTime.now().toIso8601String(),
+      'ai_diagnosis': {
+        'risk_level': result.riskLevel,
+        'confidence': result.confidence,
+        'is_emergency': result.isEmergency,
+        'ai_provider': result.aiProvider,
+      },
+    };
+
+    await _db.saveSymptomResult(historyEntry);
+
+    return result;
   }
 
   Future<void> deleteHistory(String id) async {
-    await _apiClient.delete(ApiEndpoints.symptomDelete(id));
+    await Future.delayed(const Duration(milliseconds: 300));
+    await _db.deleteSymptomHistory(id);
   }
 
   Future<List<SymptomHistoryEntity>> getHistory(String petId) async {
-    final response = await _apiClient.get(
-      ApiEndpoints.symptomHistory(petId),
-    );
-    final list = response.data as List<dynamic>;
-    return list.map((e) => SymptomHistoryEntity.fromJson(e as Map<String, dynamic>)).toList();
+    await Future.delayed(const Duration(milliseconds: 300));
+    final history = await _db.getSymptomHistory(petId);
+    
+    // Sort descending
+    history.sort((a, b) => DateTime.parse(b['created_at']).compareTo(DateTime.parse(a['created_at'])));
+    
+    return history.map((e) => SymptomHistoryEntity.fromJson(e)).toList();
   }
 }
 
 final symptomRepositoryProvider = Provider<SymptomRepository>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
-  return SymptomRepository(apiClient);
+  return SymptomRepository(LocalDatabaseService());
 });

@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 import json
 
 
@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # AI Service
     ai_service_url: str = "http://localhost:8000/v1"
     ai_service_key: str = "dev-internal-key"
+
+    # Cloud AI (Longcat / OpenAI-compatible)
+    longcat_api_key: Optional[str] = None
 
     # Server
     host: str = "0.0.0.0"

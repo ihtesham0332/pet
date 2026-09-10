@@ -5,3 +5,4 @@ from app.models.emergency_event import EmergencyEvent
 from app.models.symptom_record import SymptomRecord
 from app.models.notification import Notification
 from app.models.reminder import Reminder
+from app.models.weight_record import WeightRecord

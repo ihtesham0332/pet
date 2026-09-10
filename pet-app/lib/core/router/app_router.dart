@@ -51,7 +51,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!onboardingState.completed! && !isOnboarding) return '/onboarding';
       if (onboardingState.completed! && isOnboarding) return '/login';
 
-      if (!isLoggedIn && !isAuthRoute) return '/login';
+      if (!isLoggedIn && !isAuthRoute && !isOnboarding) return '/login';
       if (isLoggedIn && isAuthRoute) return '/pets';
       return null;
     },

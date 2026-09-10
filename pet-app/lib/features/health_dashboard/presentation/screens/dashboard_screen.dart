@@ -6,6 +6,10 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../health/presentation/providers/health_provider.dart';
 import '../../../health/domain/reminder_entity.dart';
+import '../../../health/domain/dashboard_summary_entity.dart';
+import '../../../health/domain/weight_record_entity.dart';
+import '../../../pet/presentation/providers/pet_provider.dart';
+import '../../../pet/domain/pet_entity.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -18,17 +22,43 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(healthProvider.notifier).loadUpcoming());
+    Future.microtask(() {
+      final pets = ref.read(petProvider).pets;
+      if (pets.isNotEmpty) {
+        ref.read(healthProvider.notifier).loadDashboard(petId: pets.first.id);
+      } else {
+        ref.read(healthProvider.notifier).loadDashboard();
+      }
+    });
+  }
+
+  Future<void> _refresh() async {
+    final state = ref.read(healthProvider);
+    await ref.read(healthProvider.notifier).loadDashboard(
+      petId: state.selectedPetId,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(healthProvider);
+    final petState = ref.watch(petProvider);
+    final pets = petState.pets;
+
+    final selectedPet = pets.cast<PetEntity?>().firstWhere(
+      (p) => p!.id == state.selectedPetId,
+      orElse: () => null,
+    );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Health Dashboard'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
+            onPressed: _refresh,
+          ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             tooltip: 'Add Reminder',
@@ -37,26 +67,95 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(healthProvider.notifier).loadUpcoming(),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildStatsRow(),
-              const SizedBox(height: 24),
-              _buildWeightChart(),
-              const SizedBox(height: 24),
-              _buildUpcomingSection(state),
-            ],
-          ),
+        onRefresh: _refresh,
+        child: pets.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.pets,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
+                    const SizedBox(height: 16),
+                    Text('Add a pet to see health data',
+                        style: Theme.of(context).textTheme.titleMedium),
+                  ],
+                ),
+              )
+            : SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPetSelector(pets, state.selectedPetId),
+                    if (selectedPet != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, bottom: 12),
+                        child: Text(
+                          'Health overview for ${selectedPet.name}',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    _buildStatsRow(state.summary),
+                    const SizedBox(height: 24),
+                    _buildWeightChart(state, pets),
+                    const SizedBox(height: 24),
+                    _buildUpcomingSection(state),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildPetSelector(List<PetEntity> pets, String? selectedPetId) {
+    if (pets.length <= 1 && selectedPetId != null) return const SizedBox();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Row(
+          children: [
+            Icon(Icons.pets,
+                size: 20, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: selectedPetId,
+                  hint: const Text('Select a pet'),
+                  items: pets.map((p) {
+                    return DropdownMenuItem(
+                      value: p.id,
+                      child: Text(p.name,
+                          style: const TextStyle(fontWeight: FontWeight.w500)),
+                    );
+                  }).toList(),
+                  onChanged: (petId) {
+                    if (petId != null) {
+                      ref.read(healthProvider.notifier).selectPet(petId);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(DashboardSummaryEntity? summary) {
+    final checkups = summary?.checkups ?? 0;
+    final alerts = summary?.alerts ?? 0;
+    final healthPct = summary?.healthPct ?? 100;
+    final vetVisits = summary?.vetVisits ?? 0;
+
     return SizedBox(
       height: 120,
       child: ListView(
@@ -65,25 +164,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           _StatCard(
             icon: Icons.healing,
             label: 'Check-ups',
-            value: '12',
+            value: checkups.toString(),
             color: AppTheme.infoBlue,
           ),
           _StatCard(
             icon: Icons.warning_amber,
             label: 'Alerts',
-            value: '2',
-            color: AppTheme.accentOrange,
+            value: alerts.toString(),
+            color: alerts > 0 ? AppTheme.emergencyRed : AppTheme.accentOrange,
           ),
           _StatCard(
             icon: Icons.check_circle,
             label: 'Healthy',
-            value: '90%',
-            color: AppTheme.riskLow,
+            value: '$healthPct%',
+            color: healthPct >= 70
+                ? AppTheme.riskLow
+                : healthPct >= 40
+                    ? AppTheme.accentOrange
+                    : AppTheme.emergencyRed,
           ),
           _StatCard(
             icon: Icons.calendar_today,
             label: 'Vet Visits',
-            value: '3',
+            value: vetVisits.toString(),
             color: AppTheme.primaryGreen,
           ),
         ],
@@ -91,7 +194,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildWeightChart() {
+  Widget _buildWeightChart(DashboardState state, List<PetEntity> pets) {
+    final selectedPet = pets.cast<PetEntity?>().firstWhere(
+      (p) => p!.id == state.selectedPetId,
+      orElse: () => null,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -108,64 +216,202 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             padding: const EdgeInsets.all(16),
             child: SizedBox(
               height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData:
-                      FlGridData(show: true, drawVerticalLine: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles:
-                          SideTitles(showTitles: true, reservedSize: 40),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        getTitlesWidget: (v, _) => Text(
-                          ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-                              [v.toInt()],
-                          style: const TextStyle(fontSize: 10),
+              child: state.weightRecords.isEmpty
+                  ? Center(
+                      child: Text(
+                        selectedPet != null
+                            ? 'No weight records for ${selectedPet.name}.\nLog their first weight!'
+                            : 'No weight records yet.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 13,
                         ),
                       ),
-                    ),
-                    topTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  minY: 28,
-                  maxY: 36,
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: [
-                        const FlSpot(0, 32.5),
-                        const FlSpot(1, 32.8),
-                        const FlSpot(2, 33.1),
-                        const FlSpot(3, 33.0),
-                        const FlSpot(4, 32.7),
-                        const FlSpot(5, 32.9),
-                      ],
-                      isCurved: true,
-                      color: AppTheme.primaryGreen,
-                      barWidth: 3,
-                      dotData: const FlDotData(show: true),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        color: AppTheme.primaryGreen.withOpacity(0.1),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                    )
+                  : _buildLineChart(state.weightRecords),
             ),
           ),
         ),
+        if (state.selectedPetId != null) ...[
+          const SizedBox(height: 8),
+          _buildAddWeightButton(state.selectedPetId!),
+        ],
       ],
     );
   }
 
-  Widget _buildUpcomingSection(UpcomingState state) {
+  Widget _buildLineChart(List<WeightRecordEntity> records) {
+    final sorted = List<WeightRecordEntity>.from(records)
+      ..sort((a, b) => a.measuredAt.compareTo(b.measuredAt));
+
+    final spots = sorted.asMap().entries.map((entry) {
+      return FlSpot(entry.key.toDouble(), entry.value.weightKg);
+    }).toList();
+
+    if (spots.isEmpty) return const SizedBox();
+
+    final weights = sorted.map((r) => r.weightKg).toList();
+    final minY = ((weights.reduce((a, b) => a < b ? a : b) - 1).clamp(0, double.infinity)).toDouble();
+    final maxY = (weights.reduce((a, b) => a > b ? a : b) + 1).toDouble();
+
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+            strokeWidth: 1,
+          ),
+        ),
+        titlesData: FlTitlesData(
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 44,
+              getTitlesWidget: (v, _) => Text(
+                '${v.toInt()} kg',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              interval: ((spots.length / 4).ceilToDouble().clamp(1, double.infinity)).toDouble(),
+              getTitlesWidget: (v, _) {
+                final idx = v.toInt();
+                if (idx >= 0 && idx < sorted.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      DateFormat('M/d').format(sorted[idx].measuredAt),
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox();
+              },
+            ),
+          ),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        borderData: FlBorderData(show: false),
+        minY: minY,
+        maxY: maxY,
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: true,
+            color: AppTheme.primaryGreen,
+            barWidth: 3,
+            preventCurveOverShooting: true,
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, percent, barData, index) {
+                return FlDotCirclePainter(
+                  radius: 4,
+                  color: AppTheme.primaryGreen,
+                  strokeWidth: 2,
+                  strokeColor: Colors.white,
+                );
+              },
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddWeightButton(String petId) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => _showAddWeightDialog(petId),
+        icon: const Icon(Icons.monitor_weight, size: 18),
+        label: const Text('Log Weight'),
+      ),
+    );
+  }
+
+  Future<void> _showAddWeightDialog(String petId) async {
+    final weightCtrl = TextEditingController();
+    final notesCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Log Weight'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: weightCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Weight (kg)',
+                  prefixIcon: Icon(Icons.monitor_weight),
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Enter weight';
+                  final w = double.tryParse(v);
+                  if (w == null || w <= 0 || w > 200) return 'Invalid weight';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: notesCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Notes (optional)',
+                  prefixIcon: Icon(Icons.notes),
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.of(ctx).pop(true);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && weightCtrl.text.isNotEmpty) {
+      final w = double.parse(weightCtrl.text);
+      final notes = notesCtrl.text.trim().isEmpty ? null : notesCtrl.text.trim();
+      await ref.read(healthProvider.notifier).addWeightRecord(petId, w, notes: notes);
+    }
+  }
+
+  Widget _buildUpcomingSection(DashboardState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -293,8 +539,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             const SizedBox(height: 16),
             FilledButton.tonalIcon(
-              onPressed: () =>
-                  ref.read(healthProvider.notifier).loadUpcoming(),
+              onPressed: _refresh,
               icon: const Icon(Icons.refresh, size: 18),
               label: const Text('Retry'),
             ),
@@ -596,14 +841,21 @@ class _AddReminderSheetState extends ConsumerState<_AddReminderSheet> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
-    final ok = await ref.read(healthProvider.notifier).createReminder({
+
+    final hp = ref.read(healthProvider);
+    final data = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
       'description': _descCtrl.text.trim().isEmpty
           ? null
           : _descCtrl.text.trim(),
       'reminder_type': _type,
       'scheduled_date': _date.toIso8601String(),
-    });
+    };
+    if (hp.selectedPetId != null) {
+      data['pet_id'] = hp.selectedPetId;
+    }
+
+    final ok = await ref.read(healthProvider.notifier).createReminder(data);
     if (!mounted) return;
     if (ok) {
       Navigator.of(context).pop();

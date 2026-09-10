@@ -19,6 +19,7 @@ async def list_reminders(
     status_filter: str | None = Query(None, alias="status"),
     reminder_type: str | None = Query(None, alias="type"),
     upcoming: bool = Query(False, description="Only return upcoming (pending) reminders ordered by date"),
+    pet_id: str | None = Query(None, description="Filter reminders for a specific pet"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -29,6 +30,8 @@ async def list_reminders(
             query = query.where(Reminder.status == status_filter)
         if reminder_type:
             query = query.where(Reminder.reminder_type == reminder_type)
+        if pet_id:
+            query = query.where(Reminder.pet_id == uuid.UUID(pet_id))
         if upcoming:
             query = query.where(Reminder.status == "pending").order_by(Reminder.scheduled_date.asc())
         else:
@@ -54,16 +57,17 @@ async def create_reminder(
     db: AsyncSession = Depends(get_db),
 ):
     try:
-        if dto.pet_id:
+        dto_pet_uuid = uuid.UUID(dto.pet_id) if dto.pet_id else None
+        if dto_pet_uuid:
             pet_result = await db.execute(
-                select(Pet).where(Pet.id == dto.pet_id, Pet.user_id == current_user.id)
+                select(Pet).where(Pet.id == dto_pet_uuid, Pet.user_id == current_user.id)
             )
             if not pet_result.scalar_one_or_none():
                 raise HTTPException(status_code=404, detail="Pet not found")
 
         reminder = Reminder(
             user_id=current_user.id,
-            pet_id=uuid.UUID(dto.pet_id) if dto.pet_id else None,
+            pet_id=dto_pet_uuid,
             title=dto.title,
             description=dto.description,
             reminder_type=dto.reminder_type,

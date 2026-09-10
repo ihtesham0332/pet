@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/providers/auth_provider.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/constants/api_endpoints.dart';
 
 class SubscriptionScreen extends ConsumerStatefulWidget {
   const SubscriptionScreen({super.key});
@@ -19,9 +17,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   Future<void> _upgrade(String tier) async {
     setState(() => _loading = true);
     try {
-      final api = ref.read(apiClientProvider);
-      await api.post(ApiEndpoints.subscribe, data: {'tier': tier});
-      await ref.read(authProvider.notifier).refreshProfile();
+      await ref.read(authProvider.notifier).updateProfile({'subscription_tier': tier});
+      
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Upgraded to $tier!')),
@@ -55,9 +52,8 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
 
     setState(() => _loading = true);
     try {
-      final api = ref.read(apiClientProvider);
-      await api.post(ApiEndpoints.cancelSubscription);
-      await ref.read(authProvider.notifier).refreshProfile();
+      await ref.read(authProvider.notifier).updateProfile({'subscription_tier': 'free'});
+      
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Downgraded to Free tier')),

@@ -9,6 +9,8 @@ from app.database import init_db, close_db
 from app.routers import auth, users, pets, symptoms, emergency, recommendations, veterinary, admin, reminders, subscriptions, notifications
 
 from app.routers.auth_google import router as google_router
+from app.routers.weights import router as weights_router
+from app.routers.dashboard import router as dashboard_router
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -65,6 +67,8 @@ app.include_router(auth.router)
 app.include_router(google_router)
 app.include_router(users.router)
 app.include_router(pets.router)
+app.include_router(weights_router)
+app.include_router(dashboard_router)
 app.include_router(symptoms.router)
 app.include_router(emergency.router)
 app.include_router(recommendations.router)

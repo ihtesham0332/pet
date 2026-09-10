@@ -52,6 +52,12 @@ class ApiEndpoints {
   static String notificationRead(String id) => '/notifications/$id/read';
   static const String notificationsReadAll = '/notifications/read-all';
 
+  // Dashboard
+  static const String dashboardSummary = '/dashboard/summary';
+
+  // Weights
+  static String petWeights(String petId) => '/pets/$petId/weights';
+
   // Subscriptions
   static const String subscribe = '/subscriptions';
   static const String subscriptionStatus = '/subscriptions/status';
