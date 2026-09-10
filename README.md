@@ -33,14 +33,14 @@ graph TD
     classDef db fill:#336791,stroke:#fff,stroke-width:2px,color:#fff;
 
     %% Nodes
-    A[📱 Flutter Mobile App<br>Riverpod | GoRouter | Dio]:::mobile
-    B[🌐 NestJS API Gateway<br>Auth | RBAC | Throttling]:::gateway
+    A["📱 Flutter Mobile App<br>Riverpod, GoRouter, Dio"]:::mobile
+    B["🌐 NestJS API Gateway<br>Auth, RBAC, Throttling"]:::gateway
     
-    C[(PostgreSQL + pgvector)]:::db
-    D[(Redis Cache)]:::db
+    C[("PostgreSQL + pgvector")]:::db
+    D[("Redis Cache")]:::db
     
-    E[🧠 FastAPI AI Service<br>Qwen 7B / 1.5B | BGE-M3]:::ai
-    F[☁️ Cloud AI Fallback<br>Longcat / OpenAI]:::ai
+    E["🧠 FastAPI AI Service<br>Qwen 7B / 1.5B, BGE-M3"]:::ai
+    F["☁️ Cloud AI Fallback<br>Longcat, OpenAI"]:::ai
 
     %% Connections
     A -- HTTPS / WSS --> B
