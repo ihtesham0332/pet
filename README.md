@@ -1,236 +1,154 @@
-# AI Pet Health Assistant Platform 🐾
+<div align="center">
+  <h1>🐾 AI Pet Health Assistant Platform</h1>
+  <p><i>Intelligent veterinary support platform — AI-powered symptom analysis, emergency detection, pet health monitoring, and personalized recommendations.</i></p>
 
-> Intelligent veterinary support platform — AI-powered symptom analysis, emergency detection, pet health monitoring, and personalized recommendations.
+  <!-- Badges -->
+  <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
+  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+</div>
 
-## Architecture Overview
+<hr />
 
+## 📖 Table of Contents
+- [Architecture Overview](#-architecture-overview)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [API Endpoints](#-api-endpoints)
+- [AI Providers](#-ai-providers)
+
+---
+
+## 🏗️ Architecture Overview
+
+```mermaid
+graph TD
+    %% Styling
+    classDef mobile fill:#02569B,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef gateway fill:#E0234E,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef ai fill:#009485,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef db fill:#336791,stroke:#fff,stroke-width:2px,color:#fff;
+
+    %% Nodes
+    A[📱 Flutter Mobile App<br>Riverpod | GoRouter | Dio]:::mobile
+    B[🌐 NestJS API Gateway<br>Auth | RBAC | Throttling]:::gateway
+    
+    C[(PostgreSQL + pgvector)]:::db
+    D[(Redis Cache)]:::db
+    
+    E[🧠 FastAPI AI Service<br>Qwen 7B / 1.5B | BGE-M3]:::ai
+    F[☁️ Cloud AI Fallback<br>Longcat / OpenAI]:::ai
+
+    %% Connections
+    A -- HTTPS / WSS --> B
+    B --> C
+    B --> D
+    B -- AI Requests --> E
+    E -. Fallback .-> F
 ```
-┌────────────────────────────────────────────────────────────┐
-│                     Flutter Mobile App                      │
-│           Riverpod | GoRouter | Dio | Freezed              │
-└──────────────────────────┬─────────────────────────────────┘
-                           │ HTTPS / WSS
-┌──────────────────────────▼─────────────────────────────────┐
-│                  NestJS API Gateway (AWS ECS)               │
-│        JWT Auth | RBAC | Throttling | Swagger Docs          │
-└──┬───────────────┬──────────────────┬──────────────────┬────┘
-   │               │                  │                  │
-┌──▼──┐     ┌──────▼──────┐    ┌─────▼──────┐    ┌─────▼────┐
-│Auth │     │   CRUD      │    │  AI Router │    │ Payments │
-│JWT  │     │ Users/Pets  │    │  (NestJS)  │    │ (Stripe) │
-└──┬──┘     └──────┬──────┘    └──────┬──────┘    └──────────┘
-   │               │                  │
-   │         ┌─────▼──────┐    ┌──────▼──────────────────────┐
-   │         │ PostgreSQL │    │ FastAPI AI Service (On-Prem) │
-   │         │  (RDS)     │    │ ─────────────────────────── │
-   │         │  +pgvector │    │ ┌────────────────────────┐  │
-   │         └────────────┘    │ │      AI Router          │  │
-   │                           │ │  ┌────┬────┬────┬────┐ │  │
-   │         ┌────────────┐   │ │  │Qwen│Qwen│Qwen│BGE │ │  │
-   │         │   Redis    │   │ │  │1.5B│ 7B │ VL │ M3 │ │  │
-   │         │   (Cache)  │   │ │  └────┴────┴────┴────┘ │  │
-   │         └────────────┘   │ └────────────────────────┘  │
-   │                          │   Fallback: Longcat/OpenAI  │
-   │                          └─────────────────────────────┘
-```
 
-## Tech Stack
+---
+
+## 💻 Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Mobile** | Flutter + Riverpod | Cross-platform iOS/Android |
-| **Backend** | NestJS + TypeORM | API Gateway, Business Logic |
-| **AI Service** | FastAPI (Python) | Local LLM inference |
-| **Local Models** | Qwen2.5 7B/1.5B + BGE-M3 | CPU-optimized GGUF quantized |
-| **Cloud AI** | Longcat (Meituan) | Fallback provider |
-| **Database** | PostgreSQL + pgvector | App data + RAG embeddings |
-| **Cache** | Redis | Session cache, rate limiting |
-| **Infrastructure** | AWS ECS / On-Prem Docker | Container orchestration |
-| **Monitoring** | Prometheus + Grafana | Metrics & observability |
+| **Mobile** | Flutter + Riverpod | Cross-platform iOS/Android Application |
+| **Backend** | NestJS + TypeORM | API Gateway, Core Business Logic |
+| **AI Service** | FastAPI (Python) | Local LLM inference and AI processing |
+| **Local Models** | Qwen2.5 7B/1.5B + BGE-M3 | CPU-optimized GGUF quantized models |
+| **Cloud AI** | Longcat (Meituan) / OpenAI | Fallback provider for AI capabilities |
+| **Database** | PostgreSQL + pgvector | Application data & RAG embeddings |
+| **Cache** | Redis | Session caching & rate limiting |
+| **DevOps** | AWS ECS / On-Prem Docker | Container orchestration & Deployment |
 
-## Project Structure
+---
 
-```
+## 📂 Project Structure
+
+```text
 pet-health-assistant/
-├── pet-app/                 # Flutter mobile application
-│   └── lib/
-│       ├── core/            # Constants, theme, network, router
-│       ├── shared/          # Reusable widgets, shared providers
-│       └── features/        # Feature modules (auth, pet, symptom...)
-├── pet-backend/             # NestJS API Gateway
-│   └── src/
-│       ├── modules/         # Feature modules
-│       │   ├── auth/        # JWT authentication
-│       │   ├── users/       # User management
-│       │   ├── pets/        # Pet CRUD
-│       │   ├── symptoms/    # Symptom records + AI integration
-│       │   ├── emergency/   # Emergency detection
-│       │   ├── recommendations/ # Food/product recommendations
-│       │   ├── veterinary/  # Vet directory + appointments
-│       │   ├── notifications/ # Push notifications
-│       │   ├── subscriptions/ # Stripe billing
-│       │   └── admin/       # Admin dashboard
-│       └── common/          # Guards, decorators, interceptors
-├── pet-ai-service/          # FastAPI AI Service (On-Premise)
-│   └── app/
-│       ├── clients/         # Ollama, Cloud AI, Redis clients
-│       ├── services/        # AI Router, symptom analyzer, emergency
-│       ├── models/          # Pydantic request/response schemas
-│       ├── prompts/         # System prompts
-│       └── utils/           # Parsers, dependencies
-├── pet-infra/               # Infrastructure & DevOps
-│   ├── docker/              # Docker Compose, init SQL
-│   ├── monitoring/          # Prometheus, Grafana configs
-│   └── scripts/             # Setup scripts, knowledge base seeder
-└── README.md
+├── pet-app/                 # 📱 Flutter mobile application
+├── pet-backend/             # 🌐 NestJS API Gateway
+├── pet-ai-service/          # 🧠 FastAPI AI Service (On-Premise)
+├── pet-infra/               # ⚙️ Infrastructure & DevOps (Docker/Terraform)
+└── README.md                # 📄 You are here
 ```
 
-## Quick Start
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Flutter SDK 3.2+
-- Node.js 20+
-- Python 3.12+
-- Docker & Docker Compose
-- Ollama (for local AI)
+- **Flutter SDK** 3.2+
+- **Node.js** 20+
+- **Python** 3.12+
+- **Docker** & Docker Compose
+- **Ollama** (for local AI)
 
-### 1. On-Premise AI Service (FastAPI + Qwen)
-
+### 1️⃣ Run AI Service (Local)
 ```bash
-# Install Ollama
+# Install Ollama & Pull Models
 curl -fsSL https://ollama.com/install.sh | sh
-
-# Pull Qwen models (CPU-optimized GGUF)
 ollama pull qwen2.5:7b-q4_K_M
-ollama pull qwen2.5:1.5b-q4_K_M
 ollama pull bge-m3:latest
 
-# Start the AI service
+# Start FastAPI
 cd pet-ai-service
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
-
-# Test it
-curl http://localhost:8000/health
-curl -X POST http://localhost:8000/v1/symptoms/analyze \
-  -H "X-API-Key: dev-internal-key" \
-  -H "Content-Type: application/json" \
-  -d '{"text":"My dog has a mild cough and runny nose","pet_species":"dog","pet_age":3}'
 ```
 
-### 2. NestJS Backend
-
+### 2️⃣ Run Backend
 ```bash
 cd pet-backend
 npm install
 npm run start:dev
 ```
 
-### 3. Flutter App
-
+### 3️⃣ Run Mobile App
 ```bash
 cd pet-app
 flutter pub get
 flutter run
 ```
 
-### 4. Full Stack (Docker Compose)
+*(Alternatively, run everything via Docker Compose: `docker-compose -f pet-infra/docker/docker-compose.yml up -d`)*
 
-```bash
-docker-compose -f pet-infra/docker/docker-compose.yml up -d
-```
+---
 
-## API Endpoints
+## 🔌 API Endpoints
 
-### NestJS Gateway (Cloud)
+### 🟢 NestJS Gateway (Cloud)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/v1/auth/register` | User registration |
-| POST | `/v1/auth/login` | User login (returns JWT) |
-| GET | `/v1/users/me` | Current user profile |
-| POST | `/v1/pets` | Create pet |
-| GET | `/v1/pets` | List user's pets |
-| POST | `/v1/symptoms/analyze` | Analyze symptoms (calls AI service) |
-| POST | `/v1/emergency/check` | Emergency triage |
-| POST | `/v1/recommendations/food` | Food recommendations |
+| `POST` | `/v1/auth/login` | User login (returns JWT) |
+| `GET` | `/v1/pets` | List user's pets |
+| `POST` | `/v1/symptoms/analyze` | Analyze symptoms |
 
-### FastAPI AI Service (Local/On-Premise)
+### 🔵 FastAPI AI Service (Local)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/v1/health` | Service health + model status |
-| POST | `/v1/symptoms/analyze` | Symptom text analysis (Qwen2.5) |
-| POST | `/v1/symptoms/analyze-image` | Pet photo analysis (Qwen2.5-VL) |
-| POST | `/v1/emergency/check` | Emergency detection |
-| POST | `/v1/recommendations/food` | Nutrition recommendations |
-| POST | `/v1/knowledge/query` | RAG knowledge base query |
+| `GET` | `/v1/health` | Service health + model status |
+| `POST` | `/v1/symptoms/analyze` | Symptom text analysis |
+| `POST` | `/v1/knowledge/query` | RAG knowledge base query |
 
-## AI Providers
+---
 
-The platform supports **three AI providers** with automatic fallback:
+## 🤖 AI Providers
 
-| Provider | Type | Model | Latency | Cost |
-|----------|------|-------|---------|------|
-| **Qwen2.5 (Local)** | Open-source | 7B Q4 GGUF | ~1.5s first token (CPU) | Free |
-| **Longcat** | Cloud API | LongCat-Flash-Chat | ~300ms | ~$0.10/M tokens |
-| **OpenAI** | Cloud API | GPT-4o-mini | ~500ms | ~$0.15/M tokens |
+Our AI Router is built for efficiency and reliability:
 
-The AI Router in FastAPI automatically:
-1. Tries **local Qwen** first (low latency, zero cost)
-2. Falls back to **Longcat** if local is down
-3. Falls back to **OpenAI** if Longcat is down
+1. **Local Qwen2.5 (Primary)**: Low latency, zero cost.
+2. **Longcat API (Fallback 1)**: Fast cloud inference.
+3. **OpenAI GPT-4o-mini (Fallback 2)**: Reliable secondary cloud API.
 
-Users can toggle between Local/Cloud in **Settings > AI Provider**.
+*Users can easily toggle between Local & Cloud inside the App Settings.*
 
-## Freemium Model
-
-| Feature | Free | Premium ($9.99/mo) | Pro ($19.99/mo) |
-|---------|------|--------------------|-----------------|
-| Symptom Checker | 3/month | Unlimited | Unlimited |
-| Pet Profiles | 1 pet | 5 pets | Unlimited |
-| Emergency Detection | ✅ | ✅ | ✅ |
-| Health Dashboard | Basic | Advanced | Advanced + Export |
-| Food Recommendations | ❌ | ✅ | ✅ + Discounts |
-| Telehealth Booking | ❌ | ❌ | ✅ |
-
-## Testing
-
-```bash
-# AI Service
-cd pet-ai-service
-pytest tests/ -v
-
-# Backend
-cd pet-backend
-npm test
-
-# Flutter
-cd pet-app
-flutter test
-flutter test integration_test/
-```
-
-## Security
-
-- **Authentication**: JWT with refresh tokens
-- **API Security**: API key + IP whitelist for AI service
-- **Data Encryption**: AES-256 at rest, TLS 1.3 in transit
-- **Rate Limiting**: 60 requests/minute per user
-- **AI Safety**: Disclaimers, no definitive diagnoses, human-in-loop for emergencies
-
-## Deployment
-
-### On-Premise (Recommended for AI Service)
-```bash
-cd pet-infra
-powershell -File scripts/setup-onpremise.ps1
-```
-
-### Cloud (AWS)
-```bash
-cd pet-infra
-terraform init
-terraform apply
-```
-
-## License
-Proprietary — All Rights Reserved
+---
+<div align="center">
+  <p>Built with ❤️ for happy and healthy pets.</p>
+</div>
